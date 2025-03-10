@@ -1,0 +1,11 @@
+__pycache__/
+venv
+*.db
+test
+*.db-journal
+config.json
+venv
+.venv
+.vscode
+.idea
+files/
