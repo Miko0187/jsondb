@@ -12,7 +12,7 @@ ph = PasswordHasher()
 db_files: str = None
 
 def log(addr: tuple[str, int], msg: str, db: str = None, collection: str = None):
-    timestamp = datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
     print(f"[{timestamp}] [{addr[0]}:{addr[1]}]{f'/{db}' if db != None else ''}{f'/{collection}' if collection != None else ''} {msg}")   
 
