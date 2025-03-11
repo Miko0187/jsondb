@@ -36,6 +36,8 @@ class Connection:
                 raise DoesntExistException(prefix, name)
             case "exists":
                 raise ExistException(prefix, name)
+            case "non_open":
+                raise NoDbOpenException
             case _:
                 raise RuntimeError(f"Unknown error '{error}'")
                     

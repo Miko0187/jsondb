@@ -29,6 +29,9 @@ class Database:
             await self._send("list_collections")
             
             req = await self._read()
+            
+        if req["op"] != "ok":
+            self.raise_error(req["error"])
         
         return req["d"]["result"]
         

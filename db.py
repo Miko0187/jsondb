@@ -54,10 +54,10 @@ class Database:
             return False
         
         with open(f"{self.data_files}/files/{self.db_name}/{name}.json", "w") as f:
-            f.write("{}")
+            f.write("[]")
             
-        self.data[name] = {}
-        _cache[self.db_name][name] = {}
+        self.data[name] = []
+        _cache[self.db_name][name] = []
             
         return True
     

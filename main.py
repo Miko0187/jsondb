@@ -1,6 +1,7 @@
 import os
 import json
 import asyncio
+from datetime import datetime
 from argon2 import PasswordHasher
 from db import Database, remove_db
 from utils import create_config, setup_data, get_user, db_exists
@@ -9,6 +10,11 @@ from utils import create_config, setup_data, get_user, db_exists
 _db_cache: dict[str, Database] = {}
 ph = PasswordHasher()
 db_files: str = None
+
+def log(addr: tuple[str, int], msg: str, db: str = None, collection: str = None):
+    timestamp = datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
+    
+    print(f"[{timestamp}] [{addr[0]}:{addr[1]}]{f'/{db}' if db != None else ''}{f'/{collection}' if collection != None else ''} {msg}")   
 
 async def error(writer: asyncio.StreamWriter, details: str):
     writer.write(json.dumps({
@@ -32,7 +38,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
     is_authed = False
     db: Database = None
     
-    print(f"[{addr[0]}:{addr[1]}] opened")
+    log(addr, "opened")
     
     try:
         while True:
@@ -92,7 +98,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                                                 
                     await operation(writer, "ok")
                     
-                    print(f"[{addr[0]}:{addr[1]}] opened '{name}'")
+                    log(addr, f"opened '{name}'")
                 elif data["op"] == "create_db":
                     if not data.get("d"):
                         await error(writer, "format")
@@ -110,7 +116,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                     
                     await operation(writer, "ok")
                     
-                    print(f"[{addr[0]}:{addr[1]}] created db '{name}'")
+                    log(addr, f"created db '{name}'")
                 elif data["op"] == "list_db":
                     dbs = []
                     
@@ -143,8 +149,13 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                     
                     await operation(writer, "ok")
                     
-                    print(f"[{addr[0]}:{addr[1]}] removed db '{name}'")
+                    log(addr, f"removed db '{name}'")
                 elif data["op"] == "create_collection":
+                    if db == None:
+                        await error(writer, "non_open")
+                        
+                        continue
+                    
                     if not data.get("d"):
                         await error(writer, "format")
                         
@@ -155,14 +166,24 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                     if db.create_collection(name):
                         await operation(writer, "ok")
                         
-                        print(f"[{addr[0]}:{addr[1]}] created collection '{name}'")
+                        log(addr, f"created collection '{name}'", db.db_name)
                     else:
                         await error(writer, "doesnt_exist")
                         
                         continue
                 elif data["op"] == "list_collections":
+                    if db == None:
+                        await error(writer, "non_open")
+                        
+                        continue
+                    
                     await operation(writer, "ok", {"result": db.list_collections()})
                 elif data["op"] == "delete_collection":
+                    if db == None:
+                        await error(writer, "non_open")
+                        
+                        continue
+                    
                     if not data.get("d"):
                         await error(writer, "format")
                         
@@ -173,12 +194,17 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                     if db.delete_collection(name):
                         await operation(writer, "ok")
                         
-                        print(f"[{addr[0]}:{addr[1]}]/{db.db_name} deleted collection '{name}'")
+                        log(addr, f"deleted collection '{name}'", db.db_name)
                     else:
                         await error(writer, "doesnt_exist")
                         
                         continue
                 elif data["op"] == "insert_doc":
+                    if db == None:
+                        await error(writer, "non_open")
+                        
+                        continue
+                    
                     if not data.get("d"):
                         await error(writer, "format")
                         
@@ -191,7 +217,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                         
                         continue
                     
-                    if not db.collection_exists(coll):
+                    if db.collection_exists(coll) == None:
                         await error(writer, "doesnt_exist")
                         
                         continue
@@ -207,8 +233,13 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                     
                     await operation(writer, "ok")
                     
-                    print(f"[{addr[0]}:{addr[1]}]/{db.db_name}/{coll} insert")   
+                    log(addr, f"insert", db.db_name, coll)
                 elif data["op"] == "find_one_doc":
+                    if db == None:
+                        await error(writer, "non_open")
+                        
+                        continue
+                    
                     if not data.get("d"):
                         await error(writer, "format")
                         
@@ -221,7 +252,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                         
                         continue
                     
-                    if not db.collection_exists(coll):
+                    if db.collection_exists(coll) == None:
                         await error(writer, "doesnt_exist")
                         
                         continue
@@ -235,6 +266,11 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                     
                     await operation(writer, "ok", {"result": db.find_one(coll, query)})
                 elif data["op"] == "find_all_doc":
+                    if db == None:
+                        await error(writer, "non_open")
+                        
+                        continue
+                    
                     if not data.get("d"):
                         await error(writer, "format")
                         
@@ -247,7 +283,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                         
                         continue
                     
-                    if not db.collection_exists(coll):
+                    if db.collection_exists(coll) == None:
                         await error(writer, "doesnt_exist")
                         
                         continue
@@ -256,6 +292,11 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                     
                     await operation(writer, "ok", {"result": db.find_all(coll, query)})
                 elif data["op"] == "update_doc":
+                    if db == None:
+                        await error(writer, "non_open")
+                        
+                        continue
+                    
                     if not data.get("d"):
                         await error(writer, "format")
                         
@@ -268,7 +309,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                         
                         continue
                     
-                    if not db.collection_exists(coll):
+                    if db.collection_exists(coll) == None:
                         await error(writer, "doesnt_exist")
                         
                         continue
@@ -289,8 +330,15 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                     
                     db.update(coll, query, update)
                     
-                    print(f"[{addr[0]}:{addr[1]}]/{db.db_name}/{coll} update")
+                    await operation(writer, "ok")
+                    
+                    log(addr, f"update", db.db_name, coll)
                 elif data["op"] == "delete_doc":
+                    if db == None:
+                        await error(writer, "non_open")
+                        
+                        continue
+                    
                     if not data.get("d"):
                         await error(writer, "format")
                         
@@ -303,7 +351,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                         
                         continue
                     
-                    if not db.collection_exists(coll):
+                    if db.collection_exists(coll) == None:
                         await error(writer, "doesnt_exist")
                         
                         continue
@@ -317,7 +365,9 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                     
                     db.delete(coll, query)
                     
-                    print(f"[{addr[0]}:{addr[1]}]/{db.db_name}/{coll} delete")
+                    await operation(writer, "ok")
+                    
+                    log(addr, f"delete", db.db_name, coll)
                 else:
                     await error(writer, "unknown")
                     
@@ -349,7 +399,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                     await operation(writer, "authed")
                     is_authed = True
                     
-                    print(f"[{addr[0]}:{addr[1]}] authed")
+                    log(addr, "authed")
                 else:
                     await error(writer, "unauthed")
                     

@@ -7,7 +7,8 @@ from error import (
     DoesntExistException,
     ExistException,
     FormatException,
-    InvalidUser
+    InvalidUser,
+    NoDbOpenException
 )
 
 parser = argparse.ArgumentParser()
@@ -129,7 +130,8 @@ async def main():
             DoesntExistException,
             ExistException,
             FormatException,
-            InvalidUser
+            InvalidUser,
+            NoDbOpenException
         ) as e:
             print(e)
     

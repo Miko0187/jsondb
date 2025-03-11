@@ -17,4 +17,8 @@ class ExistException(Exception):
 class FormatException(Exception):
     def __init__(self) -> None:
         super().__init__(f"Missing key for request")
+        
+class NoDbOpenException(Exception):
+    def __init__(self) -> None:
+        super().__init__(f"Open a database")
     
