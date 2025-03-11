@@ -1,6 +1,6 @@
 import typing
 if typing.TYPE_CHECKING:
-    from database import Database
+    from .database import Database
 
 class Collection:
     def __init__(self, database: "Database", name: str):

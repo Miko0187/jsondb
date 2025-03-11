@@ -1,7 +1,7 @@
 import json
 import asyncio
-from error import *
-from database import Database
+from .error import *
+from .database import Database
 
 
 class Connection:

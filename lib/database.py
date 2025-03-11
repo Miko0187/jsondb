@@ -1,7 +1,7 @@
 import typing
-from collection import Collection
+from .collection import Collection
 if typing.TYPE_CHECKING:
-    from connection import Connection
+    from .connection import Connection
 
 class Database:
     def __init__(self, connection: "Connection", name: str):
