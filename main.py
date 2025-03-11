@@ -408,7 +408,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
     except asyncio.CancelledError:
         pass
     
-    print(f"[{addr[0]}:{addr[1]}] closed")
+    log(addr, "closed")
 
 async def main():
     try:
