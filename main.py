@@ -19,7 +19,7 @@ def log(addr: tuple[str, int], msg: str, db: str = None, collection: str = None)
 async def error(writer: asyncio.StreamWriter, details: str):
     writer.write(json.dumps({
         "error": details
-    }).encode() + b"\n")
+    }).encode() + b"\n\r\n\r")
     await writer.drain()
     
 async def operation(writer: asyncio.StreamWriter, op: str, d: dict = None):
@@ -30,7 +30,7 @@ async def operation(writer: asyncio.StreamWriter, op: str, d: dict = None):
     if d != None:
         resp["d"] = d
         
-    writer.write(json.dumps(resp).encode() + b"\n")
+    writer.write(json.dumps(resp).encode() + b"\n\r\n\r")
     await writer.drain()
 
 async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
@@ -46,7 +46,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                 await operation(writer, "auth")
             
             try:
-                data = await reader.readuntil(b"\n")
+                data = await reader.readuntil(b"\n\r\n\r")
             except asyncio.IncompleteReadError:
                 break
             

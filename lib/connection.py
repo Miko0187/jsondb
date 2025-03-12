@@ -49,11 +49,11 @@ class Connection:
         if data != None:
             _req["d"] = data
             
-        self._writer.write(json.dumps(_req).encode() + b"\n")
+        self._writer.write(json.dumps(_req).encode() + b"\n\r\n\r")
         await self._writer.drain()
         
     async def _read(self) -> dict:
-        req = await self._reader.readuntil(b"\n")
+        req = await self._reader.readuntil(b"\n\r\n\r")
         req = req.decode().strip()
         req = json.loads(req)
         

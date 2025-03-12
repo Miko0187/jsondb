@@ -88,8 +88,7 @@ class Database:
         document["@id"] = str(uuid.uuid4())
         
         self.data[collection].append(document)
-        _cache[self.db_name][collection].append(document)
-        
+
         with open(f"{self.data_files}/files/{self.db_name}/{collection}.json", "w") as f:
             json.dump(self.data[collection], f)
             
@@ -104,7 +103,7 @@ class Database:
             json.dump(self.data[collection], f)
 
     def delete(self, collection: str, query: dict):
-        self.data[collection][:] = [doc for doc in self.date[collection] if not all(doc.get(k) == v for k, v in query.items())]
+        self.data[collection][:] = [doc for doc in self.data[collection] if not all(doc.get(k) == v for k, v in query.items())]
         
         _cache[self.db_name][collection] = self.data[collection]
         
