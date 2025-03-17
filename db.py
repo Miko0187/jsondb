@@ -5,11 +5,13 @@ import uuid
 
 _cache: dict[str, dict[str, list[dict]]] = {}
 
+
 def remove_db(name: str):
     try:
         del _cache[name]
     except:
         pass
+
 
 class Database:
     def __init__(self, data_files: str, db_name: str):
@@ -18,6 +20,10 @@ class Database:
         self.data: dict[str, list[dict]] = {}
         
         self.load()
+
+    def _save(self, collection: str):
+        with open(f"{self.data_files}/files/{self.db_name}/{collection}.json", "w") as f:
+            json.dump(self.data[collection], f)
         
     def load(self):
         with open(f"{self.data_files}/files/jsondb.json", "r") as f:
@@ -52,12 +58,11 @@ class Database:
     def create_collection(self, name: str):
         if os.path.isfile(f"{self.data_files}/files/{self.db_name}/{name}.json"):
             return False
-        
-        with open(f"{self.data_files}/files/{self.db_name}/{name}.json", "w") as f:
-            f.write("[]")
             
         self.data[name] = []
         _cache[self.db_name][name] = []
+
+        self._save(name)
             
         return True
     
@@ -89,8 +94,7 @@ class Database:
         
         self.data[collection].append(document)
 
-        with open(f"{self.data_files}/files/{self.db_name}/{collection}.json", "w") as f:
-            json.dump(self.data[collection], f)
+        self._save(collection)
             
     def update(self, collection: str, query: dict, updates: dict):
         for doc in self.data[collection]:
@@ -99,16 +103,14 @@ class Database:
                 
         _cache[self.db_name][collection] = self.data[collection]
         
-        with open(f"{self.data_files}/files/{self.db_name}/{collection}.json", "w") as f:
-            json.dump(self.data[collection], f)
+        self._save(collection)
 
     def delete(self, collection: str, query: dict):
         self.data[collection][:] = [doc for doc in self.data[collection] if not all(doc.get(k) == v for k, v in query.items())]
         
         _cache[self.db_name][collection] = self.data[collection]
         
-        with open(f"{self.data_files}/files/{self.db_name}/{collection}.json", "w") as f:
-            json.dump(self.data[collection], f)
+        self._save(collection)
             
     def find_all(self, collection: str, query: dict = None):
         if query is None:
