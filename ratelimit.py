@@ -24,13 +24,12 @@ class RateLimiter:
     def stop(self):
         self.cleanup_task.cancel()
 
-    async def delay_request(self, ip: str) -> bool:
+    def is_allowed(self, ip: str) -> bool:
         """ Verzögert jede Anfrage. Blockiert Clients mit zu vielen falschen Auth-Versuchen. """
 
         if self.auth_attempts[ip] >= self.auth_limit:
             return False
 
-        await asyncio.sleep(self.delay)
         return True
 
     def register_auth_attempt(self, ip: str, success: bool):

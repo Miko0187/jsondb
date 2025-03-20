@@ -1,21 +1,20 @@
 import json
 import asyncio
+import logging
 from .error import *
 from .database import Database
 
+
+logger = logging.getLogger(__name__)
 
 class Connection:
     def __init__(
         self,
         host: str,
-        port: int,
-        name: str,
-        password: str
+        port: int
     ):
         self.host = host
         self.port = port
-        self.name = name
-        self.password = password
         
         self.database = None
         
@@ -58,8 +57,33 @@ class Connection:
         req = json.loads(req)
         
         return req
-        
-    async def connect(self):
+
+    async def connect(
+        self, 
+        name: str, 
+        password: str, 
+        reconnect: bool = True, 
+        retries: int = 0
+    ):
+        tries = 0
+
+        while True:
+            try:
+                await self._connect(name, password)
+                break
+            except ConnectionRefusedError:
+                tries += 1
+                
+                if tries >= retries and retries != 0:
+                    raise ConnectionRefusedError("Failed to connect")
+                    
+                if reconnect:
+                    logger.warning(f"Failed to connect. Retrying in 10 seconds. ({tries}/{retries if retries != 0 else '∞'})")
+                    await asyncio.sleep(10)
+                else:
+                    raise ConnectionRefusedError("Failed to connect")
+
+    async def _connect(self, name: str, password: str):
         async with self._mutex:
             reader, writer = await asyncio.open_connection(self.host, self.port)
             self._reader = reader
@@ -68,19 +92,22 @@ class Connection:
             req = await self._read()
             
             if req.get("op") == "auth":
-                await self._send("auth", {
-                    "name": self.name,
-                    "password": self.password
-                })
+                await self._auth(name, password)
             else:
                 self.raise_error(req["error"])
-            
-            req = await self._read()
-            
-            if req.get("op") == "authed":
-                self._authed = True
-            else:
-                self.raise_error(req["error"])
+
+    async def _auth(self, name: str, password: str):
+        await self._send("auth", {
+            "name": name,
+            "password": password
+        })
+
+        req = await self._read()
+        
+        if req.get("op") == "authed":
+            self._authed = True
+        else:
+            self.raise_error(req["error"])
                 
     async def close(self):
         async with self._mutex:

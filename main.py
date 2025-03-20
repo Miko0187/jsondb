@@ -1,5 +1,6 @@
 import os
 import json
+import signal
 import asyncio
 from datetime import datetime
 from argon2 import PasswordHasher
@@ -69,8 +70,9 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                 continue
 
             if not is_authed:
-                if not await ratelimiter.delay_request(addr[0]):
+                if not ratelimiter.is_allowed(addr[0]):
                     await log_queue.put((addr, "rate limited", None, None))
+                    await asyncio.sleep(ratelimiter.delay)
             
             if not data.get("op"):
                 await error(writer, "format")
@@ -451,13 +453,17 @@ async def main():
     if not get_user(db_files, "root"):
         print("Root user doesnt exists. Consider deleting 'files'")
         return
+    
+    loop = asyncio.get_event_loop()
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        loop.add_signal_handler(sig, lambda: asyncio.create_task(loop.shutdown_asyncgens()))
 
     ratelimiter.start()
     log_task = asyncio.create_task(log_worker())
     server = await asyncio.start_server(handle_client, config["address"], config["port"])
     
     addr = server.sockets[0].getsockname()
-    await log_queue.put((addr, "server_started", None, None))
+    await log_queue.put((addr, f"Server started on {addr[0]}:{addr[1]}", None, None))
 
     async with server:
         await server.serve_forever()
