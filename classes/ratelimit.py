@@ -2,6 +2,7 @@ import asyncio
 import time
 from collections import defaultdict
 
+# 100% ChatGPT
 class RateLimiter:
     def __init__(self, auth_limit: int, interval: int, delay: int = 10):
         """
