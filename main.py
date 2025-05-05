@@ -59,8 +59,6 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                 await session.error("format", data.get("id"))
                 continue
 
-            print(cmd)
-
             for command in commands:
                 if command.name == cmd:
                     if await command.check_requirements(session, manager, data):

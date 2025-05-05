@@ -133,8 +133,6 @@ class Connection:
                 req = req.decode().strip()
                 req = json.loads(req)
 
-                print(req)
-
                 if req.get("op") == "event":
                     await self._dispatch_event(req["d"]["ev"], req["d"]["d"])
                 else:

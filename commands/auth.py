@@ -23,7 +23,6 @@ class Auth(Command):
         try:
             ph.verify(user, password)
         except:
-            print("ok?")
             manager.ratelimiter.register_auth_attempt(addr[0], False)
             await session.error("user", data_id)
             return
