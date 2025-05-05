@@ -10,28 +10,20 @@ class Database:
         
         self.raise_error = self._connection.raise_error
         self._send = self._connection._send
-        self._read = self._connection._read
-        self._mutex = self._connection._mutex
         
     async def create_collection(self, name: str):
-        async with self._mutex:
-            await self._send("create_collection", {
-                "name": name
-            })
-            
-            req = await self._read()
+        req = await self._send("create_collection", {
+            "name": name
+        })
             
         if req.get("op") != "ok":
-            self.raise_error(req["error"], "Collection", name)
+            self.raise_error(req["error"], req["id"], "Collection", name)
             
     async def list_collections(self) -> list[str]:
-        async with self._mutex:
-            await self._send("list_collections")
-            
-            req = await self._read()
+        req = await self._send("list_collections")
             
         if req["op"] != "ok":
-            self.raise_error(req["error"])
+            self.raise_error(req["error"], req["id"])
         
         return req["d"]["result"]
         
@@ -45,13 +37,10 @@ class Database:
         return None
         
     async def delete_collection(self, name: str):
-        async with self._mutex:
-            await self._send("delete_collection", {
-                "name": name
-            })
-            
-            req = await self._read()
+        req = await self._send("delete_collection", {
+            "name": name
+        })
             
         if req.get("op") != "ok":
-            self.raise_error(req["error"], "Collection", name)
+            self.raise_error(req["error"], req["id"], "Collection", name)
         

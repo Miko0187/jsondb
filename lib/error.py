@@ -21,4 +21,8 @@ class FormatException(Exception):
 class NoDbOpenException(Exception):
     def __init__(self) -> None:
         super().__init__(f"Open a database")
+
+class ClientError(Exception):
+    def __init__(self):
+        super().__init__("Client error")
     

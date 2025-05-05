@@ -16,19 +16,10 @@ def setup_data(dir: str):
             print("The password is not the same. exiting...")
             
             sys.exit(1)
-         
-        if " " in root_pw:
-            print("The password cant contain spaces")
             
         ph = PasswordHasher()
-        
         with open(f"{dir}/files/jsondb.json", "w") as f:
-            json.dump(
-                {
-                    "root": ph.hash(root_pw),
-                },
-                f
-            )
+            json.dump({"root": ph.hash(root_pw)}, f)
             
 def create_config():
     with open("config.json", "w") as f:
@@ -48,22 +39,3 @@ def create_config():
         "db_files": "."
     }
     
-def get_user(data: str, user: str):
-    with open(f"{data}/files/jsondb.json", "r") as f:
-        try:
-            users = json.load(f)
-        except json.JSONDecodeError:
-            return None
-        
-    return users.get(user)
-
-def db_exists(data: str, name: str):
-    found = False
-    for dir in os.scandir(f"{data}/files"):
-        if dir.is_dir():
-            if dir.name == name:
-                found = True
-                
-                break
-            
-    return found
