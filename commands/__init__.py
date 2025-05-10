@@ -1,5 +1,5 @@
 from .base import Command
-from .auth import Auth, AlreadyAuthed
+from .auth import Auth
 from .create_collection import CreateCollection
 from .create_db import CreateDb
 from .delete_collection import DeleteCollection

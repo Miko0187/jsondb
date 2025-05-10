@@ -33,20 +33,14 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
     
     try:
         while True:          
-            try:
-                data = await reader.readuntil(b"\n\r\n\r")
-            except asyncio.IncompleteReadError:
-                break
-            
+            data = await session.read()
             if not data:
                 break
-            
-            data = data.decode().strip()
+            data = data.strip()
             try:
                 data = json.loads(data)
             except json.JSONDecodeError:
                 await session.error(writer, "decoding")
-                
                 continue
 
             if not session.authed:
