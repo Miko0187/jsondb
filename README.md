@@ -14,7 +14,7 @@ My own database created for my own needs.
 
 * [ ] Users with permissions
 * [ ] Redis like cache?!
-* [ ] Docstrings
+* [X] Docstrings
 * [X] Zstd encoding
 
 ## Installation
