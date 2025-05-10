@@ -6,11 +6,13 @@ from .db import Database
 from .collection import Collection
 from .ratelimit import RateLimiter
 from .eventmanager import EventManager
+from .security import UserManagement
 
 class Manager:
     def __init__(self, save_dir: str):
         self.save_dir = save_dir
         self.dbs: dict[str, Database] = dict()
+        self.userm = UserManagement(self.save_dir)
         self.ratelimiter = RateLimiter(auth_limit=3, interval=60, delay=10)
         self.event_manager = EventManager(self)
 
@@ -21,10 +23,8 @@ class Manager:
         self._log_task = None
         self._save_task = None
 
-        self.users: dict = None
-
     def init(self):
-        self._load_users()
+        self.userm.init()
 
         self._log_task = asyncio.create_task(self._log_worker())
         self._save_task = asyncio.create_task(self._save_worker())
@@ -82,17 +82,14 @@ class Manager:
         return True
 
     def get_user(self, user: str):
-        return self.users.get(user)
+        return self.userm.get_user(user)
+        # return self.users.get(user)
     
     async def log(self, addr: tuple, msg: str, db: str = None, coll: str = None):
         await self._log_queue.put((addr, msg, db, coll))
 
     async def save(self, collection: "Collection"):
         await self._save_queue.put((collection))
-
-    def _load_users(self):
-        with open(f"{self.save_dir}/files/jsondb.json", "r") as f:
-            self.users = json.load(f)
 
     def _save_sync(collection: "Collection"):
         with open(collection.path, "w") as f:

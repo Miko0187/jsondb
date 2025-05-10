@@ -2,8 +2,6 @@ from .base import Command
 from argon2 import PasswordHasher
 from classes import Manager, Session
 
-ph = PasswordHasher()
-
 class Auth(Command):
     name = "auth"
     requires_login = False
@@ -25,9 +23,7 @@ class Auth(Command):
             await session.error("user", data_id)
             return
         
-        try:
-            ph.verify(user, password)
-        except:
+        if not user.verify_password(password):
             manager.ratelimiter.register_auth_attempt(addr[0], False)
             await session.error("user", data_id)
             return
