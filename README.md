@@ -8,7 +8,7 @@ My own database created for my own needs.
 - **Performance**: Maybe.
 - **Authentication**: More or less good? Gets reworked soon.
 - **Actions**: CRUD operations and events.
-- **Configuration**: Customizable look at the `config.json` (address, port, storage location (just let it as it is)). Gets changed to env variables soon.
+- **Configuration**: Its configured with env variables, look at .env.example
 
 ## Todo
 
@@ -16,6 +16,7 @@ My own database created for my own needs.
 * [ ] Redis like cache?!
 * [X] Docstrings
 * [X] Zstd encoding
+* [ ] Fix cli
 
 ## Installation
 
@@ -26,22 +27,39 @@ Pre 3. Create venv optionally
    ```bash
    pip install -r requirements.txt
    ```
-4. Start the database.
+4. Start the database for the first time.
    ```bash
-   python -OO main.py
+   ROOT_PASSWORD="worldhello" python main.py
+   ```
+5. Then you can just start it with the following.
+   ```bash
+   python main.py
    ```
 
 ## Configuration
 
-Modify the `config.json`.
+Set either the env variables in the command line or create a .env.
 
-```json
-{
-    "address": "0.0.0.0",  // Server binding address
-    "port": 8989,           // Server port
-    "db_files": "."          // Directory to store database files, prob gets changed in future
-}
+Command line example
+```bash
+SERVER_ADDRESS="127.0.0.1" SERVER_PORT=8989 SAVE_DIR="." python main.py
 ```
+
+Or
+.env example
+
+```bash
+SERVER_ADDRESS="127.0.0.1"
+SERVER_PORT=8989
+SAVE_DIR="."
+```
+
+then
+
+```bash
+python main.py
+```
+
 
 ## How to connect
 
