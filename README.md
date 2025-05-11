@@ -17,7 +17,7 @@ My own database created for my own needs.
 * [X] Docstrings
 * [X] Zstd encoding
 * [ ] Fix cli
-+ [ ] Add examples
+* [ ] Add examples
 
 ## Installation
 
