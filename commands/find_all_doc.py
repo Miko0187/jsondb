@@ -1,11 +1,12 @@
 from .base import Command
-from classes import Manager, Session
+from classes import Manager, Session, Permissions
 
 class FindAllDoc(Command):
     name = "find_all_doc"
     requires_login = True
     requires_db = True
     requires_coll = True
+    permission = Permissions.READ
 
     async def run(addr: tuple, request: dict, session: Session, manager: Manager):
         data_id = request.get("id")    

@@ -25,4 +25,8 @@ class NoDbOpenException(Exception):
 class ClientError(Exception):
     def __init__(self):
         super().__init__("Client error")
+
+class PermissionError(Exception):
+    def __init__(self, action: str):
+        super().__init__(f"Missing permissions for action \"{action}\"")
     

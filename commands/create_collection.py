@@ -1,11 +1,12 @@
 from .base import Command
-from classes import Manager, Session
+from classes import Manager, Session, Permissions
 
 class CreateCollection(Command):
     name = "create_collection"
     requires_login = True
     requires_db = True
     requires_coll = False
+    permission = Permissions.CREATE_COLL
 
     async def run(addr: tuple, request: dict, session: Session, manager: Manager):
         data_id = request.get("id")    

@@ -42,7 +42,7 @@ class Connection:
         self._pending_requests: dict[str, asyncio.Future] = {}
         self._event_handlers: dict[str, list[any]] = {}
         
-    def _raise_error(self, error: str, id: str, prefix: str = "Something", name: str = "Unknown"):
+    def _raise_error(self, error: str, id: str, *args, **kwargs):
         """
         Internal. Raises an exception based on an error code received from the server.
 
@@ -63,13 +63,15 @@ class Connection:
             case "already_opened":
                 raise DatabaseAlreadyOpenException
             case "doesnt_exist":
-                raise DoesntExistException(prefix, name)
+                raise DoesntExistException(*args, **kwargs)
             case "exists":
-                raise ExistException(prefix, name)
+                raise ExistException(*args, **kwargs)
             case "non_open":
                 raise NoDbOpenException
             case "client":
                 raise ClientError
+            case "permissions":
+                raise PermissionError(*args, **kwargs)
             case _:
                 raise RuntimeError(f"Unknown error '{error}'")
             
@@ -285,7 +287,7 @@ class Connection:
         })
     
         if req.get("op") != "ok":
-            self._raise_error(req["error"], req["id"], "database", name)
+            self._raise_error(req["error"], req["id"], prefix="database", name=name, action="open_database")
         else:
             self.database = Database(self, name)
             return self.database
@@ -302,7 +304,7 @@ class Connection:
         })
         
         if req.get("op") != "ok":
-            self._raise_error(req["error"], req["id"], "database", name)
+            self._raise_error(req["error"], req["id"], prefix="database", name=name, action="create_database")
             
     async def list_databases(self) -> list[str]:
         """
@@ -312,8 +314,10 @@ class Connection:
             list[str]: A list of database names.
         """
         req = await self._send("list_db")
-            
-        return req["d"]["result"]
+        if req.get("op") != "ok":
+            self._raise_error(req["error"], req["id"], prefix="database", action="list_databases")
+        else:
+            return req["d"]["result"]
     
     async def delete_database(self, name: str):
         """
@@ -327,5 +331,5 @@ class Connection:
         })
             
         if req.get("op") != "ok":
-            self._raise_error(req["error"], req["id"], "database", name)
+            self._raise_error(req["error"], req["id"], prefix="database", name=name, action="delete_database")
         

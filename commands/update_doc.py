@@ -1,11 +1,12 @@
 from .base import Command
-from classes import Manager, Session
+from classes import Manager, Session, Permissions
 
 class UpdateDoc(Command):
     name = "update_doc"
     requires_login = True
     requires_db = True
     requires_coll = True
+    permission = Permissions.WRITE
 
     async def run(addr: tuple, request: dict, session: Session, manager: Manager):
         data_id = request.get("id")    

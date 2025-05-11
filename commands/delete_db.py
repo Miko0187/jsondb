@@ -1,11 +1,12 @@
 from .base import Command
-from classes import Manager, Session
+from classes import Manager, Session, Permissions
 
 class DeleteDb(Command):
     name = "delete_db"
     requires_login = True
     requires_db = False
     requires_coll = False
+    permission = Permissions.DELETE_DB
 
     async def run(addr: tuple, request: dict, session: Session, manager: Manager):
         data_id = request.get("id")

@@ -33,7 +33,7 @@ class Database:
         })
             
         if req.get("op") != "ok":
-            self._raise_error(req["error"], req["id"], "Collection", name)
+            self._raise_error(req["error"], req["id"], prefix="Collection", name=name, action="create_collection")
             
     async def list_collections(self) -> list[str]:
         """
@@ -48,7 +48,7 @@ class Database:
         req = await self._send("list_collections")
             
         if req["op"] != "ok":
-            self._raise_error(req["error"], req["id"])
+            self._raise_error(req["error"], req["id"], action="list_collections")
         
         return req["d"]["result"]
         
@@ -85,5 +85,5 @@ class Database:
         })
             
         if req.get("op") != "ok":
-            self._raise_error(req["error"], req["id"], "Collection", name)
+            self._raise_error(req["error"], req["id"], prefix="Collection", name=name, action="delete_collection")
         

@@ -3,6 +3,7 @@ import zstd
 import struct
 import asyncio
 from .db import Database
+from .security import User
 
 HEADER_SIZE = 4 # Bytes
 
@@ -14,6 +15,7 @@ class Session:
         self.authed = False
         self.zstd = False
         self.db: Database = None
+        self.user: User = None
 
     async def send(self, body: str):
         encoded = body.encode()

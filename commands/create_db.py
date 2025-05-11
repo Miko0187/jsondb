@@ -1,11 +1,12 @@
 from .base import Command
-from classes import Manager, Session
+from classes import Manager, Session, Permissions
 
 class CreateDb(Command):
     name = "create_db"
     requires_login = True
     requires_db = False
     requires_coll = False
+    permission = Permissions.CREATE_DB
 
     async def run(addr: tuple, request: dict, session: Session, manager: Manager):
         data_id = request.get("id")

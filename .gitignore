@@ -10,3 +10,4 @@ venv
 .idea
 files/
 test.py
+.env

@@ -40,7 +40,7 @@ class Collection:
         })
             
         if req.get("op") != "ok":
-            self._raise_error(req["error"], req["id"], "Collection", self.name)
+            self._raise_error(req["error"], req["id"], prefix="Collection", name=self.name, action="insert")
             
     async def find_one(self, query: dict):
         """
@@ -61,7 +61,7 @@ class Collection:
         })
             
         if req.get("op") != "ok":
-            self._raise_error(req["error"], req["id"], "Collection", self.name)
+            self._raise_error(req["error"], req["id"], prefix="Collection", name=self.name, action="find_one")
         else:
             return req["d"]["result"]
         
@@ -84,7 +84,7 @@ class Collection:
         })
             
         if req.get("op") != "ok":
-            self._raise_error(req["error"], req["id"], "Collection", self.name)
+            self._raise_error(req["error"], req["id"], prefix="Collection", name=self.name, action="find_all")
         else:
             return req["d"]["result"]
         
@@ -106,7 +106,7 @@ class Collection:
         })
             
         if req.get("op") != "ok":
-            self._raise_error(req["error"], req["id"], "Collection", self.name)
+            self._raise_error(req["error"], req["id"], prefix="Collection", name=self.name, action="update")
             
     async def delete(self, query: dict):
         """
@@ -124,5 +124,5 @@ class Collection:
         })
             
         if req.get("op") != "ok":
-            self._raise_error(req["error"], req["id"], "Collection", self.name)
+            self._raise_error(req["error"], req["id"], prefix="Collection", name=self.name, action="delete")
     

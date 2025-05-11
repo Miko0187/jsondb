@@ -1,5 +1,4 @@
 from .base import Command
-from argon2 import PasswordHasher
 from classes import Manager, Session
 
 class Auth(Command):
@@ -28,6 +27,7 @@ class Auth(Command):
             await session.error("user", data_id)
             return
         
+        session.user = user
         session.authed = True
         manager.ratelimiter.register_auth_attempt(addr[0], True)
         manager.event_manager.subs[session] = []

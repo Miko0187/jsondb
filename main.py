@@ -1,9 +1,13 @@
+import os
 import json
+import dotenv
 import signal
 import asyncio
 from classes import Manager, Session
-from utils import create_config, setup_data
+from utils import setup_data
 from commands import *
+
+dotenv.load_dotenv(dotenv_path=".env")
 
 manager: Manager = None
 commands: list[Command] = [
@@ -70,35 +74,34 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
     await manager.log(addr, "closed")
 
 async def main():
-    try:
-        with open("config.json", "r") as f:
-            config: dict[str, any] = json.load(f)
-    except (json.JSONDecodeError, FileNotFoundError):
-        config = create_config()
-    
-    if not config.get("address"):
-        print("'address' is missing from the config")
+    if not os.environ.get("SERVER_ADDRESS"):
+        print("'SERVER_ADDRESS' is not set as an enviroment variable")
         return
+    address = os.environ["SERVER_ADDRESS"]
     
-    if not config.get("port"):
-        print("'port' is missing from the config")
+    if not os.environ.get("SERVER_PORT"):
+        print("'SERVER_PORT' is not set as an enviroment variable")
         return
+    port = int(os.environ["SERVER_PORT"])
     
-    if not config.get("db_files"):
-        print("'db_files' is missing from the config")
+    if not os.environ.get("SAVE_DIR"):
+        print("'SAVE_DIR' is not set as an enviroment variable")
         return
+    save_dir = os.environ["SAVE_DIR"]
     
-    setup_data(config["db_files"])
+    if error := setup_data(save_dir):
+        print(error)
+        return
 
     global manager
-    manager = Manager(config["db_files"])
+    manager = Manager(save_dir)
     manager.init()
 
     if not manager.get_user("root"):
         print("Root user doesnt exists. Consider deleting 'files' and rerunning this program")
         return
 
-    server = await asyncio.start_server(handle_client, config["address"], config["port"])
+    server = await asyncio.start_server(handle_client, address, port)
     
     addr = server.sockets[0].getsockname()
     await manager.log(addr, f"Server started on {addr[0]}:{addr[1]}")

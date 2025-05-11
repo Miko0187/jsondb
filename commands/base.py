@@ -6,6 +6,7 @@ class Command(ABC):
     requires_login: bool
     requires_db: bool
     requires_coll: bool
+    permission: str = None
 
     @classmethod
     async def check_requirements(cls, session: Session, manager: Manager, request: dict) -> bool:
@@ -17,6 +18,9 @@ class Command(ABC):
             return False
         if cls.requires_coll and not (session.db and request.get("d", {}).get("collection")):
             await session.error("format", request.get("id"))
+            return False
+        if cls.permission and not session.user.has_permission(cls.permission, session.db.db_name if session.db else None):
+            await session.error("permissions", request.get("id"))
             return False
         return True
 
